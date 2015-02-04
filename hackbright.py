@@ -10,7 +10,7 @@ def get_student_by_github(github):
                 WHERE github = ?"""
     DB.execute(query, (github,))
     row = DB.fetchone()
-    print """\
+    return """\
 Student: %s %s
 Github account: %s"""%(row[0], row[1], row[2])
 
