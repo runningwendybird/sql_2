@@ -5,7 +5,9 @@ CONN = None
 
 # Returns student's name when student,github entered in command line
 def get_student_by_github(github):
-    query = """SELECT first_name, last_name, github FROM Students WHERE github = ?"""
+    query = """SELECT first_name, last_name, github
+                FROM Students
+                WHERE github = ?"""
     DB.execute(query, (github,))
     row = DB.fetchone()
     print """\
@@ -14,7 +16,9 @@ Github account: %s"""%(row[0], row[1], row[2])
 
 # Returns project details when project,title entered in command line
 def get_project_by_title(title):
-    query = """SELECT title, description, max_grade FROM Projects WHERE title = ?"""
+    query = """SELECT title, description, max_grade
+                FROM Projects
+                WHERE title = ?"""
     DB.execute(query, (title,))
     row = DB.fetchone()
     print """\
@@ -24,7 +28,11 @@ Max Grade: %s"""%(row[0], row[1], row[2])
 
 #Returns list of students and their grades if they have grades for project when you enter grade,title in command line
 def get_grade_by_project(title):
-    query = """SELECT students.first_name, students.last_name, Projects.title, grades.grade,Projects.max_grade
+    query = """SELECT students.first_name,
+                      students.last_name,
+                      Projects.title,
+                      grades.grade,
+                      Projects.max_grade
                 FROM Students
                 INNER JOIN Grades
                 ON students.github = grades.student_github
@@ -40,6 +48,28 @@ def get_grade_by_project(title):
         Student: %s %s
         Project: %s
         Grade: %d out of %d\n"""%(row[0], row[1], row[2], row[3], row[4])
+
+# show grades for student by entering student_grades,github in command line
+def get_grades_by_student(github):
+    query = """SELECT Students.first_name,
+                      Students.last_name,
+                      Grades.project_title,
+                      Grades.grade,
+                      Projects.max_grade
+                FROM Students
+                INNER JOIN Grades
+                ON students.github = grades.student_github
+                INNER JOIN Projects
+                ON Grades.project_title = Projects.title
+                WHERE github = ?"""
+    DB.execute(query, (github, ))
+    rows = DB.fetchall()
+    # pulls first_name, last_name from first tuple returned
+    print "Grades for %s %s:" % (rows[0][0], rows[0][1])
+    # iterates through all tuples for project_title, grade and max_grade
+    for row in rows:
+        print """\
+        %s: %s out of %s""" % (row[2], row[3], row[4])
 
 # add new student to database by entering first_name,last_name,github in command line
 def make_new_student(first_name, last_name, github):
@@ -88,6 +118,8 @@ def main():
             get_grade_by_project(*args)
         if command == "new_grade":
             assign_grade(*args)
+        if command == "student_grades":
+            get_grades_by_student(*args)
         elif command == "new_student":
             make_new_student(*args)
 
